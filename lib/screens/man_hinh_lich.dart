@@ -118,10 +118,22 @@ class _ManHinhLichState extends State<ManHinhLich> {
                             });
                             _luuDuLieu();
                           },
+
+                          //Hàm sửa dùng khi màn hình chi tiết gọi
+                          hamSua: (monMoi) {
+                            //Cập nhật phần tử trong danh sách
+                            setState(() {
+                              _danhSach[index] = monMoi;
+                            });
+                            _luuDuLieu(); 
+                          }
                         ),
                       ),
                     );
-                    _luuDuLieu();
+
+                    //Load lại nếu người dùng có nhập ghi chú
+                    setState(() {});
+                      _luuDuLieu();  
                   },
                 );
               },

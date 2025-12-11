@@ -3,13 +3,26 @@ import 'package:numberpicker/numberpicker.dart'; //Cho đồng hồ cuộn
 import '../models/mon_hoc.dart';
 
 class HopThoaiThemMon extends StatefulWidget {
-  const HopThoaiThemMon({super.key});
+  final MonHoc? monHocHienTai;
+  const HopThoaiThemMon({super.key, this.monHocHienTai});
 
   @override
   State<HopThoaiThemMon> createState() => _HopThoaiThemMonState();
 }
 
 class _HopThoaiThemMonState extends State<HopThoaiThemMon> {
+
+  //Khởi đầu với dữ liệu cũ để khi người dùng sửa không bị trống trơn
+  @override
+  void initState() {
+    super.initState();
+    if (widget.monHocHienTai != null) {
+      _tenController.text = widget.monHocHienTai!.tenMon;
+      _phongController.text = widget.monHocHienTai!.phongHoc;
+      _gioController.text =  widget.monHocHienTai!.thoiGian;
+    }
+  }
+
   //Controller
   final _tenController = TextEditingController();
   final _phongController = TextEditingController();
@@ -159,7 +172,7 @@ class _HopThoaiThemMonState extends State<HopThoaiThemMon> {
   Widget build(BuildContext context) {
     return AlertDialog(
       //Giao diện thêm môn học
-      title: const Text("Thêm môn học mới"),
+      title: Text(widget.monHocHienTai != null ? "Cập nhật môn học" : "Thêm môn học mới"),
 
       //SigleChildScrollView: Nó biến nội dung bên trong thành một vùng cuộn được. Nếu không đủ chỗ, người dùng có thể vuốt ngón tay để xem phần bị che khuất.
       content: SingleChildScrollView(
@@ -198,17 +211,20 @@ class _HopThoaiThemMonState extends State<HopThoaiThemMon> {
           onPressed: () {
             if(_tenController.text.trim().isEmpty) return;
             
+            final isEditing = widget.monHocHienTai != null;
             //Tạo object MonHoc từ dữ liệu nhập
             final monMoi = MonHoc(
               tenMon: _tenController.text,
               phongHoc: _phongController.text,
               thoiGian: _gioController.text,
+              //Logic giữ ghi chú
+              ghiChu: isEditing ? widget.monHocHienTai!.ghiChu: "",
             );
 
             //Trả về dữ liệu cho màn hình chính
             Navigator.pop(context, monMoi);
           },
-          child: const Text("Lưu"), 
+          child: Text(widget.monHocHienTai != null ? "Cập nhật" : "Lưu"), 
         )
       ],
     );
