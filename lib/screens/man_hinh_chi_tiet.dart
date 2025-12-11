@@ -1,13 +1,14 @@
 // lib/screens/man_hinh_chi_tiet.dart
 
 import 'package:flutter/material.dart';
+import 'package:lich_hoc_sv/widgets/hop_thoai_them.dart';
 import '../models/mon_hoc.dart'; // Import model MonHoc
 
 class ManHinhChiTiet extends StatefulWidget {
   final MonHoc monHoc;
   final VoidCallback hamXoa; //TOASK
-
-  const ManHinhChiTiet({super.key, required this.monHoc, required this.hamXoa});
+  final Function(MonHoc) hamSua;
+  const ManHinhChiTiet({super.key, required this.monHoc, required this.hamXoa, required this.hamSua});
 
   @override
   State<ManHinhChiTiet> createState() => _ManHinhChiTietState(); //TOASK
@@ -32,6 +33,32 @@ class _ManHinhChiTietState extends State<ManHinhChiTiet> {
       appBar: AppBar(
         title: Text(widget.monHoc.tenMon),
         actions: [
+          //Nút sửa
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.blue),
+            onPressed: () async {
+              //Mở hộp thoại lên, truyền thông tin hiện tại vào để nó tự điền
+              final monDaSua = await showDialog<MonHoc>(
+                context: context,
+                builder: (ctx) => HopThoaiThemMon(monHocHienTai: widget.monHoc), //Đưa môn học hiện tại cho hộp thoại thêm môn
+              );
+
+              if (monDaSua != null) {
+                setState(() {
+                  //Cập nhật giao diện
+                  widget.monHoc.tenMon = monDaSua.tenMon;
+                  widget.monHoc.phongHoc = monDaSua.phongHoc;
+                  widget.monHoc.thoiGian = monDaSua.thoiGian;
+                });
+
+                //Báo về màn hình chính để lưu lại
+                widget.hamSua(widget.monHoc);
+              }
+            },
+          ),
+
+
+          //Nút xóa
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () {
