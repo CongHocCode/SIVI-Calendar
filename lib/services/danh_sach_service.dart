@@ -1,9 +1,9 @@
 //lib/services/danh_sach_service.dart
 
-
-import 'dart:convert'; //De dung jsonEncode jsonDecode 
-import 'package:shared_preferences/shared_preferences.dart'; //Để lưu dữ liệu
+//De dung jsonEncode jsonDecode 
+//Để lưu dữ liệu
 import '../models/mon_hoc.dart';
+import 'database_helper.dart';
 
 class DanhSachService {
   //Biến chứa danh sách dữ liệu (private)
@@ -14,51 +14,57 @@ class DanhSachService {
 
   //--- 1. Đọc dữ liệu từ ổ cứng ---
   Future<void> loadData() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? dataJson = prefs.getString('lich_hoc_v2');
-
-    if (dataJson != null) {
-      List<dynamic> jsonList = jsonDecode(dataJson);
-      _danhSach = jsonList.map((e) => MonHoc.fromJson(e)).toList(); //TOASK
-      _sapXep(); //Đọc xong sắp xếp lại
-    } 
+    _danhSach = await DatabaseHelper.instance.readAll();
   }
 
 
-  //--- 2. Lưu dữ liệu xuống ổ cứng ---
-  Future<void> _saveData() async {
-    final prefs = await SharedPreferences.getInstance();
-    String dataJson = jsonEncode(_danhSach.map((e) => e.toJson()).toList()); //TOASK
-    await prefs.setString('lich_hoc_v2', dataJson);
-  }
-
-
-  //--- 3. Thêm môn ---
+  //--- 2. Thêm môn ---
   Future<void> themMon(MonHoc mon) async {
-    _danhSach.add(mon);
-    _sapXep();
-    await _saveData();
+    //Lưu xuống sql -> Nó trả về cái ID mới sinh ra
+    int idMoi = await DatabaseHelper.instance.create(mon);
+    mon.id = idMoi; // Gán ID đó vào object trên RAM
+    _danhSach.add(mon); //Thêm vào list hiển thị
+    _sapXepListHienThi();
   }
 
-  //--- 4. Xóa môn ---
+  //--- 3. Xóa môn ---
   Future<void> xoaMon(MonHoc mon) async {
-    _danhSach.remove(mon);
-    await _saveData();
+    if (mon.id != null) {
+      await DatabaseHelper.instance.delete(mon.id!); //Xóa trong DB
+      _danhSach.remove(mon); // Xóa trên RAM
+    }
   }
 
   //--- 5. Sửa môn ---
   Future<void> suaMon(MonHoc monCu, MonHoc monMoi) async {
-    int index = _danhSach.indexOf(monCu);
+    monMoi.id = monCu.id;
+
+    await DatabaseHelper.instance.update(monMoi); //Update DB
+
+    //Update trên RAM
+    int index =_danhSach.indexOf(monCu);
     if (index != -1) {
       _danhSach[index] = monMoi;
-      _sapXep();
-      await _saveData();
+      _sapXepListHienThi();
+    }
+  }
+
+  //Hàm làm mới (Xóa hết rồi nạp lại)
+  Future<void> lamMoiDanhSach(List<MonHoc> listMoi) async {
+    for (var m in _danhSach) {
+      if (m.id != null) await DatabaseHelper.instance.delete(m.id!); //Xóa từng cái cho an toàn
+    }
+    _danhSach.clear();
+
+    //Thêm mới
+    for (var m in listMoi) {
+      await themMon(m);
     }
   }
 
 
-  //--- 6. Thuật toán sắp xếp ---
-  void _sapXep() {
+ //Hàm sắp xếp nội bộ trên RAM (cập nhật giao diện)
+  void _sapXepListHienThi() {
     _danhSach.sort((a, b) {
       int cmp = a.ngayHoc.compareTo(b.ngayHoc);
       if (cmp != 0) return cmp;
@@ -66,11 +72,4 @@ class DanhSachService {
     });
   }
 
-  // Hàm này xóa hết dữ liệu cũ và nạp danh sách mới vào
-  Future<void> lamMoiDanhSach(List<MonHoc> danhSachMoi) async {
-    _danhSach.clear();
-    _danhSach.addAll(danhSachMoi);
-    _sapXep(); // Sắp xếp lại
-    await _saveData(); // Lưu xuống ổ cứng
-  }
 }

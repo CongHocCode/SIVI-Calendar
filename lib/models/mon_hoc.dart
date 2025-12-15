@@ -1,6 +1,7 @@
 // lib/models/mon_hoc.dart
 
 class MonHoc {
+  int? id;
   String tenMon;
   String phongHoc;
   String thoiGian;
@@ -9,6 +10,7 @@ class MonHoc {
   String giangVien;
 
   MonHoc({
+    this.id,
     required this.tenMon,
     required this.phongHoc,
     required this.thoiGian,
@@ -20,6 +22,7 @@ class MonHoc {
   //Ham bien object thanh Map (chuyen thanh json)
   Map<String, dynamic> toJson() {
     return {
+      'id' : id,
       'tenMon' : tenMon,
       'phongHoc': phongHoc,
       'thoiGian' : thoiGian,
@@ -32,6 +35,7 @@ class MonHoc {
   //Ham bien Map thanh Object de doc du lieu TOASK
   factory MonHoc.fromJson(Map<String, dynamic> json) {
     return MonHoc(
+      id: json['id'],
       tenMon: json['tenMon'],
       phongHoc: json['phongHoc'],
       thoiGian: json['thoiGian'],
