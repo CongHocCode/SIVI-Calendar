@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart'; //Cho đồng hồ cuộn
 import 'package:intl/intl.dart'; //Để format ngày
 import '../models/mon_hoc.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
 class HopThoaiThemMon extends StatefulWidget {
   final MonHoc? monHocHienTai;
@@ -249,9 +251,30 @@ class _HopThoaiThemMonState extends State<HopThoaiThemMon> {
           onPressed: () => Navigator.pop(context), child: const Text("Hủy"),
         ),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             if(_tenController.text.trim().isEmpty) return;
             
+            // KIỂM TRA QUYỀN ĐỂ HẸN LỊCH THÔNG BÁO
+            if (Platform.isAndroid) {
+              var status = await Permission.scheduleExactAlarm.status;
+              if (status.isDenied) {
+                //Hiện thông báo nhắc nhở
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Bạn cần cấp quyền 'Báo thức' để App nhắc lịch nhé!"),
+                      duration: Duration(seconds: 3),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                }
+                await Permission.scheduleExactAlarm.request(); //Mở trang cài đặt\
+                status = await Permission.scheduleExactAlarm.status;
+
+              }
+
+            }
+
             final isEditing = widget.monHocHienTai != null;
             //Tạo object MonHoc từ dữ liệu nhập
             final monMoi = MonHoc(
