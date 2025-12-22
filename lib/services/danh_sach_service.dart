@@ -42,22 +42,27 @@ class DanhSachService {
 
   //--- 2. Thêm môn ---
   Future<void> themMon(MonHoc mon) async {
-    //Lưu xuống sql -> Nó trả về cái ID mới sinh ra
+    // 1. Lưu xuống SQL
     int idMoi = await DatabaseHelper.instance.create(mon);
-    mon.id = idMoi; // Gán ID đó vào object trên RAM
-    _danhSach.add(mon); //Thêm vào list hiển thị
+    mon.id = idMoi; 
+    _danhSach.add(mon);
     _sapXepListHienThi();
 
-    //Hẹn giờ thông báo
-     await NotificationHelper.henGioBaoThuc(
-      id: idMoi, // Dùng ID của database làm ID thông báo luôn (thông minh chưa!)
-      title: "Sắp đến giờ học: ${mon.tenMon}",
-      body: "Phòng: ${mon.phongHoc} | Giờ: ${mon.thoiGian}",
-      thoiGianHoc: _getDateTimeChuan(mon),
-      phutNhacTruoc: mon.nhacTruoc,
-    );
+    // 2. Hẹn giờ thông báo (Bọc try-catch cho an toàn giống suaMon)
+    if (mon.nhacTruoc > 0) { // Chỉ hẹn nếu có nhắc
+      try {
+        await NotificationHelper.henGioBaoThuc(
+          id: idMoi,
+          title: "Sắp đến giờ học: ${mon.tenMon}",
+          body: "Phòng: ${mon.phongHoc} | Giờ: ${mon.thoiGian}",
+          thoiGianHoc: _getDateTimeChuan(mon),
+          phutNhacTruoc: mon.nhacTruoc,
+        );
+      } catch (e) {
+        print("⚠️ Lỗi hẹn giờ khi thêm: $e");
+      }
+    }
   }
-
   //--- 3. Xóa môn ---
   Future<void> xoaMon(MonHoc mon) async {
     if (mon.id != null) {
@@ -71,26 +76,42 @@ class DanhSachService {
 
   //--- 5. Sửa môn ---
   Future<void> suaMon(MonHoc monCu, MonHoc monMoi) async {
-    monMoi.id = monCu.id;
+    // 1. [QUAN TRỌNG NHẤT] Chép ID từ cái cũ sang cái mới
+    // Nếu thiếu dòng này, monMoi.id sẽ là null -> Không hẹn giờ được
+    monMoi.id = monCu.id; 
 
-    await DatabaseHelper.instance.update(monMoi); //Update DB
-
-    //Update trên RAM
-    int index =_danhSach.indexOf(monCu);
+    // 2. Cập nhật Database
+    await DatabaseHelper.instance.update(monMoi);
+    
+    // 3. Cập nhật List trên RAM
+    int index = _danhSach.indexOf(monCu);
     if (index != -1) {
       _danhSach[index] = monMoi;
       _sapXepListHienThi();
 
-      //Sửa thông báo cũ
-      if (monCu.id != null) {
-        await NotificationHelper.huyNhacNho(monCu.id!);
-        await NotificationHelper.henGioBaoThuc(
-          id: monCu.id!,
-          title: "Sắp đến giờ học: ${monMoi.tenMon}",
-          body: "Phòng: ${monMoi.phongHoc} | Giờ: ${monMoi.thoiGian}",
-          thoiGianHoc: _getDateTimeChuan(monMoi),
-          phutNhacTruoc: monMoi.nhacTruoc,
-        );
+      // 4. Xử lý Thông báo
+      // Chỉ làm khi có ID hợp lệ
+      if (monMoi.id != null) {
+        try {
+          // a. Hủy cái hẹn giờ cũ (Dựa trên ID)
+          await NotificationHelper.huyNhacNho(monMoi.id!);
+         
+
+          // b. Hẹn giờ mới (Nếu người dùng có đặt nhắc nhở > 0)
+          if (monMoi.nhacTruoc > 0) {
+            await NotificationHelper.henGioBaoThuc(
+              id: monMoi.id!, // Dùng ID này để hẹn
+              title: "Sắp đến giờ: ${monMoi.tenMon}",
+              body: "Phòng: ${monMoi.phongHoc} | Giờ: ${monMoi.thoiGian}",
+              thoiGianHoc: _getDateTimeChuan(monMoi),
+              phutNhacTruoc: monMoi.nhacTruoc,
+              // Nếu bạn chưa sửa hàm henGioBaoThuc nhận phút thì sửa lại logic trừ giờ ở đây
+            );
+
+          }
+        } catch (e) {
+          print("💀Lỗi thông báo khi sửa: $e");
+        }
       }
     }
   }

@@ -34,7 +34,7 @@ class _ManHinhChiTietState extends State<ManHinhChiTiet> {
       appBar: AppBar(
         title: Text(widget.monHoc.tenMon),
         actions: [
-          //Nút sửa
+          //Nút sửa: Dùng cái khung của hộp thoại thêm để sửa
           IconButton(
             icon: const Icon(Icons.edit, color: Colors.blue),
             onPressed: () async {
@@ -46,12 +46,13 @@ class _ManHinhChiTietState extends State<ManHinhChiTiet> {
 
               if (monDaSua != null) {
                 setState(() {
-                  //Cập nhật giao diện
+                  //Cập nhật giao diện VÀ thời gian nhắc trước
                   widget.monHoc.tenMon = monDaSua.tenMon;
                   widget.monHoc.phongHoc = monDaSua.phongHoc;
                   widget.monHoc.giangVien = monDaSua.giangVien;
                   widget.monHoc.thoiGian = monDaSua.thoiGian;
                   widget.monHoc.ngayHoc = monDaSua.ngayHoc;
+                  widget.monHoc.nhacTruoc = monDaSua.nhacTruoc;
                 });
 
                 //Báo về màn hình chính để lưu lại

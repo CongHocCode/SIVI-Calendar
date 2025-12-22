@@ -361,30 +361,51 @@ class _HopThoaiThemMonState extends State<HopThoaiThemMon> {
             List<MonHoc> ketQua = [];
             final isEditing = widget.monHocHienTai != null;
 
-            //Xác định số lần lặp
-            int soLanLoop = _coLapLai ? soTuan : 1; //Nếu có lặp thì lấy số tuần, không thì lấy 1
-            for (var i = 0; i < soLanLoop; i++)
-            {
-              //Tính ngày cho tuần thứ i
-              DateTime ngayCuaTuanNay = _selectedDate.add(Duration(days: 7 * i));
-              //Tạo object mới cho mỗi tuần
-              ketQua.add( MonHoc(
+            //Đảm bảo trả về 1 phần tử cho màn hình chi tiết khi sửa
+            if (isEditing) {
+              final monDaSua = MonHoc(
+                id: widget.monHocHienTai!.id, // Giữ nguyên ID cũ
                 tenMon: _tenController.text,
                 phongHoc: _phongController.text,
                 thoiGian: _gioController.text,
                 giangVien: _gvController.text,
-                ngayHoc: ngayCuaTuanNay,
+                ngayHoc: _selectedDate, // Ngày có thể sửa
+                ghiChu: widget.monHocHienTai!.ghiChu, // Giữ ghi chú cũ
                 nhacTruoc: _nhacTruoc,
-                //Logic giữ ghi chú
-                ghiChu: isEditing ? widget.monHocHienTai!.ghiChu: "",
-              ));
-            }
+              );
 
-            //Trả về dữ liệu cho màn hình chính
-            if (context.mounted) {
-              Navigator.pop(context, ketQua);
+              print("🔍 Kiểm tra nút Lưu - Nhắc trước: ${monDaSua.nhacTruoc} phút");
+
+              if (context.mounted) {
+                Navigator.pop(context, monDaSua); 
+              }
+            } 
+            else {
+              //Xác định số lần lặp
+              int soLanLoop = _coLapLai ? soTuan : 1; //Nếu có lặp thì lấy số tuần, không thì lấy 1
+              for (var i = 0; i < soLanLoop; i++)
+              {
+                //Tính ngày cho tuần thứ i
+                DateTime ngayCuaTuanNay = _selectedDate.add(Duration(days: 7 * i));
+                //Tạo object mới cho mỗi tuần
+                ketQua.add( MonHoc(
+                  tenMon: _tenController.text,
+                  phongHoc: _phongController.text,
+                  thoiGian: _gioController.text,
+                  giangVien: _gvController.text,
+                  ngayHoc: ngayCuaTuanNay,
+                  nhacTruoc: _nhacTruoc,
+                  //Logic giữ ghi chú
+                  ghiChu: isEditing ? widget.monHocHienTai!.ghiChu: "",
+                ));
+              }
+
+              //Trả về dữ liệu cho màn hình chính
+              if (context.mounted) {
+                Navigator.pop(context, ketQua);
+              }
             }
-          },
+          },        
           child: Text(widget.monHocHienTai != null ? "Cập nhật" : "Lưu"), 
         )
       ],

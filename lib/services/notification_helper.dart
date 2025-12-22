@@ -49,9 +49,10 @@ class NotificationHelper {
   }) async {
     // Trừ đi số phút để nhắc trước
     final gioNhac = thoiGianHoc.subtract(Duration(minutes: phutNhacTruoc));
-
+  
     // Nếu giờ nhắc đã qua thì thôi (return luôn để đỡ tốn tài nguyên)
     if (gioNhac.isBefore(DateTime.now())) {
+      print("Giờ nhắc đã qua, không nhắc nữa");
       return;
     }
     
@@ -74,7 +75,7 @@ class NotificationHelper {
           priority: Priority.high,
 
           fullScreenIntent: true,
-          category: AndroidNotificationCategory.alarm, //Khai báo đây là dạng báo thức
+          category: AndroidNotificationCategory.reminder, //Khai báo đây là dạng reminder
         ),
       ),
 
@@ -83,6 +84,7 @@ class NotificationHelper {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );
+   
   }
 
   // --- 4. HỦY HẸN GIỜ ---
