@@ -1,14 +1,14 @@
-// lib/models/mon_hoc.dart
-
 class MonHoc {
-  int? id;
-  String tenMon;
-  String phongHoc;
+  int? id; //id để phân biệt rồi lưu và DB
+  String tenMon; //đóng vai trò là tên sự kiện chung
+  String phongHoc; // Với lịch cá nhân, cái này đóng vai trò là "Địa điểm"
   String thoiGian;
   DateTime ngayHoc;
   String ghiChu;
-  String giangVien;
+  String giangVien; // Lịch cá nhân thì cái này để rỗng
   int nhacTruoc;
+  int mauSac;
+  int loaiSuKien; // <--- THÊM BIẾN NÀY (0: Học, 1: Cá nhân)
 
   MonHoc({
     this.id,
@@ -16,36 +16,40 @@ class MonHoc {
     required this.phongHoc,
     required this.thoiGian,
     required this.ngayHoc,
-    required this.giangVien,
+    this.giangVien = "",
     this.ghiChu = "",
-    required this.nhacTruoc,
+    this.nhacTruoc = 15,
+    this.mauSac = 0xFF2196F3,
+    this.loaiSuKien = 0, // <--- Mặc định là 0 (Lịch học)
   });
 
-  //Ham bien object thanh Map (chuyen thanh json)
   Map<String, dynamic> toJson() {
     return {
-      'id' : id,
-      'tenMon' : tenMon,
+      'id': id,
+      'tenMon': tenMon,
       'phongHoc': phongHoc,
-      'thoiGian' : thoiGian,
-      'ngayHoc' : ngayHoc.toIso8601String(), //Convert dưới dạng chuỗi ISO-8601 (2025-12-08T00:00:00) TOASK
-      'ghiChu' : ghiChu,
-      'giangVien' : giangVien,
-      'nhacTruoc' : nhacTruoc,
+      'thoiGian': thoiGian,
+      'ngayHoc': ngayHoc.toIso8601String(),
+      'ghiChu': ghiChu,
+      'giangVien': giangVien,
+      'nhacTruoc': nhacTruoc,
+      'mauSac': mauSac,
+      'loaiSuKien': loaiSuKien, // <--- Lưu vào DB
     };
   }
 
-  //Ham bien Map thanh Object de doc du lieu TOASK
   factory MonHoc.fromJson(Map<String, dynamic> json) {
     return MonHoc(
       id: json['id'],
       tenMon: json['tenMon'],
       phongHoc: json['phongHoc'],
       thoiGian: json['thoiGian'],
-      ngayHoc: DateTime.parse(json['ngayHoc']), //Parse chuỗi thành ngày
-      ghiChu: json['ghiChu'] ?? "", //null thi lay rong
-      giangVien: json['giangVien'],
-      nhacTruoc: json['nhacTruoc'],
+      ngayHoc: DateTime.parse(json['ngayHoc']),
+      ghiChu: json['ghiChu'] ?? "",
+      giangVien: json['giangVien'] ?? "",
+      nhacTruoc: json['nhacTruoc'] ?? 15,
+      mauSac: json['mauSac'] ?? 0xFF2196F3,
+      loaiSuKien: json['loaiSuKien'] ?? 0, // <--- Đọc ra
     );
   }
 }

@@ -28,16 +28,18 @@ class DatabaseHelper {
   //Câu lệnh SQL tạo bảng (chạy 1 lần duy nhất khi cài app)
   Future _createDB(Database db, int version) async {
     await db.execute('''
-    CREATE TABLE monhoc (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tenMon TEXT NOT NULL,
-      phongHoc TEXT NOT NULL,
-      thoiGian TEXT NOT NULL,
-      ngayHoc TEXT NOT NULL,
-      ghiChu TEXT,
-      giangVien TEXT,
-      nhacTruoc INTEGER
-    )
+      CREATE TABLE monhoc (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tenMon TEXT NOT NULL,
+        phongHoc TEXT NOT NULL,
+        thoiGian TEXT NOT NULL,
+        ngayHoc TEXT NOT NULL,
+        ghiChu TEXT,
+        giangVien TEXT,
+        nhacTruoc INTEGER,
+        mauSac INTEGER,
+        loaiSuKien INTEGER
+      )
     ''');
   }
 
