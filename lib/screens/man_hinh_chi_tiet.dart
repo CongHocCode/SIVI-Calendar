@@ -33,10 +33,13 @@ class _ManHinhChiTietState extends State<ManHinhChiTiet> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.monHoc.tenMon),
+        // Lấy màu từ dữ liệu
+        backgroundColor: Color(widget.monHoc.mauSac), 
+        foregroundColor: Colors.white,
         actions: [
           //Nút sửa: Dùng cái khung của hộp thoại thêm để sửa
           IconButton(
-            icon: const Icon(Icons.edit, color: Colors.blue),
+            icon: const Icon(Icons.edit, color: Colors.white),
             onPressed: () async {
               //Mở hộp thoại lên, truyền thông tin hiện tại vào để nó tự điền
               final monDaSua = await showDialog<MonHoc>(
@@ -64,7 +67,7 @@ class _ManHinhChiTietState extends State<ManHinhChiTiet> {
 
           //Nút xóa
           IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
+            icon: const Icon(Icons.delete, color: Colors.white),
             onPressed: () {
               //Hiện bảng xác nhận xóa
               showDialog(
@@ -106,9 +109,12 @@ class _ManHinhChiTietState extends State<ManHinhChiTiet> {
           children: [
             //Thông tin giờ và phòng
             Card(
-              color: Colors.blue.shade50,
+              color: Color(widget.monHoc.mauSac).withOpacity(0.4), 
               child: ListTile(
-                leading: const Icon(Icons.calendar_today, color: Colors.blue),
+                leading:  Icon(
+                  widget.monHoc.loaiSuKien == 1 ? Icons.person : Icons.class_, // Icon tùy loại | Không hiểu chỗ Icon 🐧
+                  color: Color(widget.monHoc.mauSac)
+                ),
                 title: Text("Ngày: ${DateFormat('EEEE, dd/MM/yyyy', 'vi').format(widget.monHoc.ngayHoc)}"), //TOASK
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
