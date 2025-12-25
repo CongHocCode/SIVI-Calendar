@@ -86,4 +86,19 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
+
+  // Hàm xóa lịch học (loaiSuKien = 0) trong khoảng thời gian cụ thể
+  Future<int> deleteSchoolScheduleInRange(DateTime start, DateTime end) async {
+    final db = await instance.database;
+    
+    // Chuyển ngày sang chuỗi ISO8601 để so sánh trong SQL
+    // start: Lấy đầu ngày (00:00:00)
+    // end: Lấy cuối ngày (23:59:59) hoặc đơn giản là so sánh chuỗi ngày
+    
+    return await db.delete(
+      'monhoc',
+      where: 'loaiSuKien = 0 AND ngayHoc >= ? AND ngayHoc <= ?',
+      whereArgs: [start.toIso8601String(), end.toIso8601String()],
+    );
+  }
 }
