@@ -48,15 +48,18 @@ class BackupService {
       await file.writeAsString(dataJson);
 
       //Đóng gói file vào chuẩn XFile (chuẩn chung của Flutter cho đa nền tảng)
-      final xFile = XFile(file.path);
-
+      final xFile = XFile(
+        file.path,
+        mimeType: 'text/plain', //để app khác hiểu là văn bản
+        name: fileName,         //Để gợi ý tên file chuẩn
+      );
 
       //Gọi SharePlus: bật cái bảng của Android lên (Zalo, Drive,...)
       //shareXFiles: chia sẻ file
-      final result = await Share.shareXFiles(
-        [xFile], //Danh sách file cần gửi
-        text: 'File sao lưu lịch học SIVI', //Nội dung kèm theo
-        subject: 'Sao lưu dữ liệu',
+       final result = await Share.shareXFiles(
+        [xFile],
+        text: 'File sao lưu lịch học SIVI',
+        subject: 'Sao lưu dữ liệu', 
       );
 
       //Kiểm tra đã chia sẻ thành công chưa
@@ -81,12 +84,12 @@ class BackupService {
 
 
   //KHÔI PHỤC: Lấy file json, đọc dữ liệu, xóa DB cũ, nạp DB mới
-  // nhận vào service để gọi hàm lamMoiDanhDach, onSuccess để báo cho UI vẽ lại TODO: Hỏi lại onSuc
-  static Future<void> khoiPhucDuLieu(BuildContext context, DanhSachService service, Function onSuccess) async {
+  // nhận vào service để gọi hàm lamMoiDanhDach
+  static Future<bool> khoiPhucDuLieu(BuildContext context, DanhSachService service) async {
     try {
       // Mở trình chọn file
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom, //Chọn kiểu tùy chỉnh TODO:ASK
+        type: FileType.custom, //Chọn kiểu tùy chỉnh
         allowedExtensions: ['json', 'txt'] //Chỉ cho chọn file json hoặc txt
       );
 
@@ -106,45 +109,46 @@ class BackupService {
 
         //Hỏi xác nhận
         if (context.mounted) {
-          showDialog(
+          //Dùng await để chờ người dùng bấm nút trong Dialog xác nhận
+          bool? xacNhan = await showDialog<bool>(
             context: context,
             builder: (ctx) => AlertDialog(
               title: const Text("Cảnh báo khôi phục"),
               content: Text("Hành động này sẽ XÓA SẠCH dữ liệu hiện tại và thay thế bằng ${listMoi.length} môn học từ file backup.\n\nBạn có chắc chắn không?"),
 
               actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Thôi")),
+                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Thôi")),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
                   onPressed: () async {
-                    Navigator.pop(ctx); //Đóng bảng hỏi
-
-                    //Gọi Service để nạp dữ liệu mới
-                    await service.lamMoiDanhSach(listMoi);
-
-                    //Báo thành công và gọi hàm vẽ lại màn hình
-                    onSuccess();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Khôi phục thành công!"), backgroundColor: Colors.green),
-                      );
-                    }
+                    Navigator.pop(ctx, true); //Đóng bảng hỏi và trả về true rằng người dùng đã xác nhận                
                   },
                   child: const Text("Khôi phục ngay"),
                 )
               ],
             )
           );
+
+          if (xacNhan == true) {
+            await service.lamMoiDanhSach(listMoi); //Xóa dữ liệu cũ và thay bằng cái mới
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Khôi phục thành công!"), backgroundColor: Colors.green),
+              );
+            }
+            return true; // Báo cáo thành công
+          }
         }
       }
     } catch (e) {
-      //Nếu file bị lỗi format hay chọn nhầm file không phải JSON của app
+      print("Lỗi restore: $e");
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("File lỗi hoặc sai định dạng! ($e)"), backgroundColor: Colors.red),
+          const SnackBar(content: Text("File lỗi!"), backgroundColor: Colors.red),
         );
       }
     }
+    return false; //Thất bại hoặc hủy
   }
 
 

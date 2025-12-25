@@ -128,6 +128,57 @@ class DanhSachService {
       await themMon(m);
     }
   }
+  
+  // --- HÀM ĐỒNG BỘ THÔNG MINH (Dùng cho Web Scraping) ---
+  Future<void> capNhatLichTuDong(List<MonHoc> danhSachMoi) async {
+    if (danhSachMoi.isEmpty) return;
+
+    // 1. Tìm khoảng thời gian của dữ liệu mới
+    // Sắp xếp tạm để lấy ngày đầu và ngày cuối
+    danhSachMoi.sort((a, b) => a.ngayHoc.compareTo(b.ngayHoc));
+    
+    DateTime minDate = danhSachMoi.first.ngayHoc;
+    DateTime maxDate = danhSachMoi.last.ngayHoc;
+
+    // Mở rộng maxDate ra cuối ngày để chắc chắn bao trọn
+    maxDate = DateTime(maxDate.year, maxDate.month, maxDate.day, 23, 59, 59); //TODO: Hỏi lại tại sao
+
+
+    // 2. Xóa dữ liệu cũ (Chỉ xóa Lịch học, giữ Lịch cá nhân)
+    await DatabaseHelper.instance.deleteSchoolScheduleInRange(minDate, maxDate);
+    
+    // Đồng thời xóa khỏi List trên RAM để đồng bộ
+    _danhSach.removeWhere((mon) => 
+        mon.loaiSuKien == 0 && 
+        mon.ngayHoc.compareTo(minDate) >= 0 && 
+        mon.ngayHoc.compareTo(maxDate) <= 0
+    );
+
+    // 3. Thêm dữ liệu mới vào
+    for (var mon in danhSachMoi) {
+      // Lưu xuống DB
+      int id = await DatabaseHelper.instance.create(mon);
+      mon.id = id;
+      
+      // Thêm vào RAM
+      _danhSach.add(mon);
+      
+      // Hẹn giờ thông báo (nếu cần)
+      if (mon.nhacTruoc > 0) {
+        try {
+          await NotificationHelper.henGioBaoThuc(
+            id: id,
+            title: "Sắp học: ${mon.tenMon}",
+            body: "Phòng: ${mon.phongHoc}",
+            thoiGianHoc: _getDateTimeChuan(mon),
+            phutNhacTruoc: mon.nhacTruoc,
+          );
+        } catch (_) {}
+      }
+    }
+
+    _sapXepListHienThi(); // Sắp xếp lại lần cuối
+  }
 
 
  //Hàm sắp xếp nội bộ trên RAM (cập nhật giao diện)

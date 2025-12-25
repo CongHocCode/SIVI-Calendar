@@ -1,7 +1,7 @@
 name: lich_hoc_sv
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.0
 
 environment:
   sdk: ^3.0.0  # <--- ĐÃ SỬA: Để thấp xuống cho dễ tương thích
@@ -29,6 +29,8 @@ dependencies:
   path_provider: ^2.1.5
   share_plus: ^12.0.1
   file_picker: ^10.3.8
+  flutter_inappwebview: ^6.1.5
+  html: ^0.15.6
 
 dev_dependencies:
   flutter_test:
@@ -37,7 +39,15 @@ dev_dependencies:
   
   
   flutter_launcher_icons: ^0.14.2 
+  flutter_native_splash: ^2.4.7
 
+flutter_native_splash:
+  color: "#448AFF" # Màu xanh (trùng màu AppBar)
+  image: assets/images/penguin.png # Logo của bạn
+  android_12:
+    image: assets/images/penguin.png
+    color: "#448AFF"
+  # Nếu muốn nền trắng logo giữa thì đổi color thành "#FFFFFF"
 
 flutter:
   uses-material-design: true
