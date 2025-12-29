@@ -118,6 +118,9 @@ class DanhSachService {
 
   //Hàm làm mới (Xóa hết rồi nạp lại)
   Future<void> lamMoiDanhSach(List<MonHoc> listMoi) async {
+    //Hủy tất cả thông báo
+    await NotificationHelper.huyTatCaThongBao();
+    
     for (var m in _danhSach) {
       if (m.id != null) await DatabaseHelper.instance.delete(m.id!); //Xóa từng cái cho an toàn
     }
@@ -144,15 +147,22 @@ class DanhSachService {
     maxDate = DateTime(maxDate.year, maxDate.month, maxDate.day, 23, 59, 59); //TODO: Hỏi lại tại sao
 
 
-    // 2. Xóa dữ liệu cũ (Chỉ xóa Lịch học, giữ Lịch cá nhân)
-    await DatabaseHelper.instance.deleteSchoolScheduleInRange(minDate, maxDate);
-    
-    // Đồng thời xóa khỏi List trên RAM để đồng bộ
-    _danhSach.removeWhere((mon) => 
+    //2. Tìm các môn cũ trong khoảng thời gian này để hủy hẹn giờ trước
+    List<MonHoc> cacMonSeBiXoa = _danhSach.where((mon) => 
         mon.loaiSuKien == 0 && 
         mon.ngayHoc.compareTo(minDate) >= 0 && 
         mon.ngayHoc.compareTo(maxDate) <= 0
-    );
+    ).toList();
+
+    for (var mon in cacMonSeBiXoa) {
+      if (mon.id != null) {
+        await NotificationHelper.huyNhacNho(mon.id!);
+        print("Đã hủy lịch cũ ID: ${mon.id}"); // Log để kiểm tra
+      }
+    }
+
+    await DatabaseHelper.instance.deleteSchoolScheduleInRange(minDate, maxDate);
+    _danhSach.removeWhere((mon) => cacMonSeBiXoa.contains(mon));
 
     // 3. Thêm dữ liệu mới vào
     for (var mon in danhSachMoi) {

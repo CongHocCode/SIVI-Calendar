@@ -1,3 +1,5 @@
+//lib/services/notification_helper.dart
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -93,5 +95,11 @@ class NotificationHelper {
   // --- 4. HỦY HẸN GIỜ ---
   static Future<void> huyNhacNho(int id) async {
     await _notification.cancel(id);
+  }
+
+  // --- 5. HỦY TẤT CẢ THÔNG BÁO (khi xóa dữ liệu hoặc reset app) ---
+   static Future<void> huyTatCaThongBao() async {
+    await _notification.cancelAll();
+    print("Đã hủy toàn bộ thông báo!");
   }
 }
