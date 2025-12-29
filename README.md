@@ -40,4 +40,4 @@
 Nếu không nhận được thông báo, vui lòng vào **Menu > Sửa lỗi không báo** và cấp quyền **Tự khởi chạy (Auto-Start)** cho ứng dụng.
 
 ---
-Developed with ❤️ by [Tên Của Bạn]
+Developed with ❤️ by [CongHocCode]
