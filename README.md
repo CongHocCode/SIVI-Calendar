@@ -1,6 +1,6 @@
-# 🐧 SIVI Calendar - Trợ lý Lịch học Sinh viên
+# 🐧 SIVI Calendar - Trợ lý Lịch học Sinh viên 
 
-Ứng dụng quản lý thời khóa biểu thông minh, tích hợp đồng bộ dữ liệu từ cổng thông tin đào tạo (Web Scraping) và nhắc nhở lịch học tự động.
+Ứng dụng quản lý thời khóa biểu thông minh, tích hợp đồng bộ dữ liệu từ cổng thông tin đào tạo (Web Scraping) và nhắc nhở lịch học tự động. (Còn bug chưa fix 🐧)
 
 ## ✨ Tính năng nổi bật
 
@@ -25,7 +25,7 @@
 
 | Lịch Tuần | Chi tiết Môn | Auto Bot |
 |:---------:|:------------:|:--------:|
-| *(Bạn hãy chụp ảnh màn hình điện thoại, vứt vào folder screenshots rồi chèn link vào đây)* | ... | ... |
+| ... | ... | ... |
 (Chưa chụp 🐧)
 
 ## 🚀 Cài đặt & Sử dụng
